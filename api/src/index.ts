@@ -20,8 +20,17 @@ export const app = new Elysia()
       }),
     }
   )
-  .get('/pdf/:uuid', ({ params }) => file(`pdfs/${params.uuid}`))
-  .get('/pdfs', () => file('pdfs.tar.gz'))
+  .get(
+    '/pdf/:uuid',
+    ({ params }) => file(`pdfs/${params.uuid}`),
+    {
+      params: t.Object({
+        uuid: t.String(),
+      }),
+    }
+  )
+  .get('/pdfs', () => service.pdfs())
+  .get('/compress-folder-pdfs', () => service.compressFolder())
   .use(cors())
   .use(swagger({
     path: '/doc'

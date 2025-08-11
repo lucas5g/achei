@@ -13,7 +13,7 @@ export class Service {
       }[]
     } = await axios.get('https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages', {
       params: {
-        per_page: 100,
+        per_page: 10,
         // per_page: 10,
         page,
         _fields: 'acf.uuidarquivo'
@@ -82,4 +82,13 @@ export class Service {
     Bun.spawn(['tar', '-zcf', 'pdfs.tar.gz', 'pdfs'])
   }
 
+  async pdfs() {
+    const pdfs = await fs.readdir('pdfs')
+    return pdfs.map(pdf => {
+      return {
+        uuid: pdf.replace('.pdf', ''),
+        url: `${Bun.env.BASE_URL}/pdf/${pdf}`
+      }
+    })
+  }
 }

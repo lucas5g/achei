@@ -39,4 +39,10 @@ describe('service', () => {
   it('compress folder', async () => {
     await service.compressFolder()
   })
+
+  it.only('pdfs', async () => {
+    const res = await service.pdfs()
+
+    console.log(res)
+  })
 })
