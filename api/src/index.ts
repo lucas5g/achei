@@ -2,11 +2,12 @@ import { Elysia, t } from "elysia";
 import { Service } from "./service";
 import cors from "@elysiajs/cors";
 import { file } from "bun";
+import { swagger } from "@elysiajs/swagger";
 
 const service = new Service()
 
 export const app = new Elysia()
-  .get("/", () => "Hello Elysia")
+  .get("/", { api: 'Elysia' })
   .get('/downloads-pdfs', () => service.downloadsPdfs())
   .get(
     '/pesquisar',
@@ -20,7 +21,11 @@ export const app = new Elysia()
     }
   )
   .get('/pdf/:uuid', ({ params }) => file(`pdfs/${params.uuid}`))
+  .get('/pdfs', () => file('pdfs.tar.gz'))
   .use(cors())
+  .use(swagger({
+    path: '/doc'
+  }))
   .listen(8000);
 
 console.log(

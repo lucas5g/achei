@@ -13,8 +13,8 @@ export class Service {
       }[]
     } = await axios.get('https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages', {
       params: {
-        // per_page: 100,
-        per_page: 10,
+        per_page: 100,
+        // per_page: 10,
         page,
         _fields: 'acf.uuidarquivo'
       }
@@ -34,7 +34,7 @@ export class Service {
       const { data } = await axios.get('https://gerais.defensoria.mg.def.br/file/service/download/Intranet/' + uuid, {
         responseType: 'arraybuffer',
         headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMTMyNTIwOC03ZmIzLTRhMWUtYjhhNC1mOGUyNWYzNTIxZWUiLCJ0eXBlIjoiVVNVQVJJT19JTlRFUk5PIiwiZmlzdCI6ZmFsc2UsImlhdCI6MTc1NDY4NTMwNywiZXhwIjoxNzU0NjkyNTA3LCJqdGkiOiIxMC4yMzMuMTE0LjE3NiJ9.qUBVVfES5MnFQtFAAlkiTw7At3UgjGQCpOYhNA5Ol8fCTUupmTLuQc8LPKKtxWEk'
+          Authorization: 'Bearer eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMTMyNTIwOC03ZmIzLTRhMWUtYjhhNC1mOGUyNWYzNTIxZWUiLCJ0eXBlIjoiVVNVQVJJT19JTlRFUk5PIiwiZmlzdCI6ZmFsc2UsImlhdCI6MTc1NDkxNzY0NCwiZXhwIjoxNzU0OTI0ODQ0LCJqdGkiOiIxMC4yMzMuMTE0LjE3NiJ9.R3SNK9b0XJc4M6GDvxVEEOdhwjc559URch0fHIUxasnlI-xucp_4uhaCUXQBsw6w'
         }
       })
 
@@ -76,6 +76,10 @@ export class Service {
 
     return { message: `Arquivos criados com sucesso ${uuids.length}.` }
 
+  }
+
+  async compressFolder() {
+    Bun.spawn(['tar', '-zcf', 'pdfs.tar.gz', 'pdfs'])
   }
 
 }
