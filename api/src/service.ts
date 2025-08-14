@@ -5,13 +5,14 @@ const pdfParse = require('pdf-parse')
 export class Service {
 
 
-  async getUrlPdf(page: number) {
+  async getUrlsPdfs(page: number) {
     try {
 
-      const url = `https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages?per_page=1&page=${page}&_fields=acf`
+      const url = `https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages?per_page=100&page=${page}`
 
       const { data }: {
         data: {
+          id:number,
           acf: {
             uuidarquivo: string,
             arquivo: {
@@ -21,10 +22,18 @@ export class Service {
         }[]
       } = await axios.get(url)
 
-      return {
-        url,
-        urlPdf:data[0].acf.arquivo?.url,
-      }
+      return data.map(row => {
+        return {
+          id:row.id,
+          url,
+          urlPdf: row.acf.arquivo?.url
+        }
+      })
+
+      // return {
+      //   url,
+      //   urlPdf:data[0].acf.arquivo?.url,
+      // }
 
     } catch {
       throw new Error('Erro page ' + page)
@@ -64,15 +73,23 @@ export class Service {
     }
   }
 
-  async downloadPdf(url:string, page: number) {
-    const { data } = await axios.get(url, {
-      responseType: 'arraybuffer',
-      headers: {
-        'Content-Type': 'application/pdf',
-      }
-    })
+  async downloadPdf(id:number, url:string, page: number) {
 
-    await fs.writeFile(`pdfs/${url}`, data)
+    try {
+
+      
+      const { data } = await axios.get(url, {
+        responseType: 'arraybuffer',
+        headers: {
+          'Content-Type': 'application/pdf',
+        }
+      })
+      await fs.writeFile(`pdfs/${id}.pdf`, data)
+    } catch {
+      await fs.writeFile(`pdfs/${id}-nao-existe.txt`, 'não existe')
+      // throw new Error(`Erro page ${page} id ${id}`)
+    }
+    
   }
 
   async downloadPromise(uuid: string) {

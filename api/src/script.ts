@@ -3,20 +3,17 @@ const service = new Service()
 import fs from 'fs/promises'
 
 async function main(){
-  for(let count = 1; count <= 20_000; count++){
-    const { urlPdf, url} = await service.getUrlPdf(count)
+  console.time()
+  const urls = []
+  for(let count = 24; count <= 150; count++){
+    const data = await service.getUrlsPdfs(count)
 
-    if(!urlPdf){
-      await fs.writeFile(`pdfs/${count}-nao-encontrado.txt`, url)
-      continue
-    }
-
-    await service.downloadPdf(urlPdf, count)
-
-    console.log(url)
+    // console.log(data)
+    Promise.all(data.map(row => service.downloadPdf(row.id, row.urlPdf, count)))
 
   }
- 
+
+  console.timeEnd()
 }
 
 main()
