@@ -3,29 +3,76 @@ import fs from "fs/promises"
 const pdfParse = require('pdf-parse')
 
 export class Service {
+
+
+  async getUrlPdf(page: number) {
+    try {
+
+      const url = `https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages?per_page=1&page=${page}&_fields=acf`
+
+      const { data }: {
+        data: {
+          acf: {
+            uuidarquivo: string,
+            arquivo: {
+              url: string
+            }
+          }
+        }[]
+      } = await axios.get(url)
+
+      return {
+        url,
+        urlPdf:data[0].acf.arquivo?.url,
+      }
+
+    } catch {
+      throw new Error('Erro page ' + page)
+    }
+  }
+
   async getUuids(page: number) {
 
-    const { data }: {
-      data: {
-        acf: {
-          uuidarquivo: string
+    try {
+
+      const { data }: {
+        data: {
+          acf: {
+            uuidarquivo: string,
+            arquivo: {
+              url: string
+            }
+          }
+        }[]
+      } = await axios.get('https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages', {
+        params: {
+          per_page: 1,
+          // per_page: 10,
+          page,
+          _fields: 'acf.arquivo.url'
         }
-      }[]
-    } = await axios.get('https://wp-intranet.defensoria.mg.def.br/wp-json/wp/v2/pages', {
-      params: {
-        per_page: 10,
-        // per_page: 10,
-        page,
-        _fields: 'acf.uuidarquivo'
+        // ?per_page=100&page=1&_fields=acf.uuidarquivo
+      })
+
+      const uuids = data
+        .map(page => page.acf.arquivo?.url)
+      // .filter(uuid => uuid)
+
+      return uuids
+    } catch {
+      throw new Error('Erro page ' + page)
+    }
+  }
+
+  async downloadPdf(url:string, page: number) {
+    const { data } = await axios.get(url, {
+      responseType: 'arraybuffer',
+      headers: {
+        'Content-Type': 'application/pdf',
       }
-      // ?per_page=100&page=1&_fields=acf.uuidarquivo
     })
 
-    const uuids = data
-      .map(page => page.acf.uuidarquivo)
-      .filter(uuid => uuid)
-
-    return uuids
+    await fs.writeFile(`pdfs/${url}`, data)
   }
 
   async downloadPromise(uuid: string) {
@@ -34,7 +81,7 @@ export class Service {
       const { data } = await axios.get('https://gerais.defensoria.mg.def.br/file/service/download/Intranet/' + uuid, {
         responseType: 'arraybuffer',
         headers: {
-          Authorization: 'Bearer eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMTMyNTIwOC03ZmIzLTRhMWUtYjhhNC1mOGUyNWYzNTIxZWUiLCJ0eXBlIjoiVVNVQVJJT19JTlRFUk5PIiwiZmlzdCI6ZmFsc2UsImlhdCI6MTc1NDkxNzY0NCwiZXhwIjoxNzU0OTI0ODQ0LCJqdGkiOiIxMC4yMzMuMTE0LjE3NiJ9.R3SNK9b0XJc4M6GDvxVEEOdhwjc559URch0fHIUxasnlI-xucp_4uhaCUXQBsw6w'
+          Authorization: 'Bearer eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMDI2OTAwYi0xYTIzLTQ0MGEtOTljOC04YTA5YTVlMWY2ZjMiLCJ0eXBlIjoiVVNVQVJJT19JTlRFUk5PIiwiZmlzdCI6ZmFsc2UsImlhdCI6MTc1NTAwNzMzNCwiZXhwIjoxNzU1MDE0NTM0LCJqdGkiOiIxMC4xMDAuNjYuNDIifQ.H7GdeT5-LBeOX3-r6zi00aF_BFvdyCh2MJYfrn0OlfjTonbFPqUnm-HHTweXAPBf'
         }
       })
 

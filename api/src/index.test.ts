@@ -26,11 +26,11 @@ describe("api", () => {
     expect(data?.length).toBeGreaterThan(0)
   })
 
-  it.only('pdfs', async () => {
-    const { data } = await api.pdfs.get()
+  // it.only('pdfs', async () => {
+  //   const { data } = await api.pdfs.get()
 
-    expect(data).toBeTruthy()
-  })
+  //   expect(data).toBeTruthy()
+  // })
 
 
 })
@@ -40,9 +40,23 @@ describe('service', () => {
     await service.compressFolder()
   })
 
-  it.only('pdfs', async () => {
+  it('pdfs', async () => {
     const res = await service.pdfs()
 
     console.log(res)
   })
+
+  it.only('downloadAllPdfs', async () => {
+    const urls = []
+    for(let count = 1; count < 200; count++) {
+      urls.push(await service.getUuids(count))
+    }
+
+    const urlsFlat = urls.flat()
+    console.log(urlsFlat.length)
+
+    // console.log(urlsFlat)
+    // await service.downloadsPdfs()
+  }, 200_000)
+
 })
