@@ -3,5 +3,6 @@ node_modules
 *.tar.gz
 .env
 *.txt
+*.png
 
 /src/generated/prisma

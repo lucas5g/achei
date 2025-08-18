@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios"
 import fs from "fs/promises"
 const pdfParse = require('pdf-parse')
+import { fromPath } from 'pdf2pic'
 
 export class Service {
 
@@ -12,7 +13,7 @@ export class Service {
 
       const { data }: {
         data: {
-          id:number,
+          id: number,
           acf: {
             uuidarquivo: string,
             arquivo: {
@@ -24,11 +25,11 @@ export class Service {
 
       return data.map(row => {
         return {
-          id:row.id,
+          id: row.id,
           url,
           urlPdf: row.acf.arquivo?.url
         }
-      })
+      }).filter(row => row.urlPdf)
 
       // return {
       //   url,
@@ -73,23 +74,35 @@ export class Service {
     }
   }
 
-  async downloadPdf(id:number, url:string, page: number) {
+  async downloadPdf(id: number, url: string, page: number) {
 
-    try {
+    const { data } = await axios.get(url, {
+      responseType: 'arraybuffer',
+      headers: {
+        'Content-Type': 'application/pdf',
+      }
+    })
 
-      
-      const { data } = await axios.get(url, {
-        responseType: 'arraybuffer',
-        headers: {
-          'Content-Type': 'application/pdf',
-        }
-      })
-      await fs.writeFile(`pdfs/${id}.pdf`, data)
-    } catch {
-      await fs.writeFile(`pdfs/${id}-nao-existe.txt`, 'não existe')
-      // throw new Error(`Erro page ${page} id ${id}`)
+    // console.log(data)
+    await fs.writeFile(`pdfs/${id}-${page}.pdf`, data)
+
+    const { text } = await pdfParse(data)
+
+    if (text.length) {
+      return console.log(`text ${id}-${page} => `, text)
     }
-    
+
+    // const converted =
+
+
+
+
+    //   try {
+    // } catch {
+    //   console.log(`${id}-${page}`)
+    //   // await fs.writeFile(`pdfs/${id}-${page}-nao-existe.txt`, 'não existe')
+    // }
+
   }
 
   async downloadPromise(uuid: string) {
