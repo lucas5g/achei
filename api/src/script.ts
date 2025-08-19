@@ -1,48 +1,56 @@
+import { prisma } from "./prisma"
 import { Service } from "./service"
-import fs from 'fs/promises'
 const service = new Service()
-const pdfParse = require('pdf-parse')
-import { fromPath } from "pdf2pic";
-import { createWorker } from 'tesseract.js'
 
 async function main() {
   console.time()
 
-  // for (let count = 193; count <= 193; count++) {
-  //   const data = await service.getUrlsPdfs(count)
+  const urlPdf = "https://wp-intranet.defensoria.mg.def.br/wp-content/uploads/2024/02/Ato-5931-2024-Designacao-para-SAI-1687.3105.2023.0.003.pdf"
 
-  //   Promise.all(data.map(row => service.downloadPdf(row.id, row.urlPdf, count)))
 
-  // }
+  const buffer = await service.downloadBufferPdf(urlPdf)
+  const text = await service.bufferPdfToText(buffer)
+  const content = text.length > 5 ? text : await service.processBufferPdfImage('0',buffer)
 
-  const files = await fs.readdir('pdfs')
-  // console.log(files);
+  const embedding = await service.embeddingsText(content)
 
-  for (const file of files) {
-    const data = await fs.readFile(`pdfs/${file}`)
+  console.log('content => ', content)
+  // console.log('embedding => ', embedding)
+  
+  const post = await service.saveRegister({
+    id: 0,
+    content,
+    embedding,
+    urlPdf,
+    url: urlPdf,
+    type: 'NAO_ENCONTRADO',
+    number: ''
+  })
+// console.log(embedding)
 
-    const { text } = await pdfParse(data)
+  return
+  // for (let count = 1; count <= 193; count++) {
+  
+  const start = 64
+  const end = 64
+    for (let count = start; count <= end; count++) {
 
-    const filename = file.replace('.pdf', '')
+    const pdfsInfo = await service.getInfoPdfs(count)
 
-    const converted = fromPath(`pdfs/${file}`, {
-      density: 500,
-      savePath: `imgs`,
-      saveFilename: filename,
-      format: 'png',
-
-    })
-
-    await converted()
-
-    const worker = await createWorker('por');
-
-    const ret = await worker.recognize(`imgs/${filename}.1.png`)
-
-    console.log(ret.data.text);
+    // console.log('pdfsInfo => ', pdfsInfo)
+    await Promise.all(pdfsInfo.map(pdf => service.processPdf(pdf)))
 
   }
 
+
+  const test = await prisma.post.findMany({
+    where:{
+      type: 'NAO_ENCONTRADO'
+    }
+  })
+
+
+  console.log('test => ',test)
   console.timeEnd()
 }
 

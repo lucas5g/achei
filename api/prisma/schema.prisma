@@ -15,14 +15,18 @@ datasource db {
 }
 
 enum Type {
-  res
-  ato
+  RESOLUCAO
+  ATO
+  DELIBERACAO
+  NAO_ENCONTRADO
 }
 
 model Post {
-  id      Int    @id
-  content String
-  number  String
-  type    Type
-  urlPdf  String
+  id        Int     @id
+  content   String
+  number    String
+  type      Type
+  url       String
+  urlPdf    String
+  embedding Float[]
 }

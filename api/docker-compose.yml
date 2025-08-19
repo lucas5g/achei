@@ -1,0 +1,16 @@
+services:
+  db:
+    image: ankane/pgvector:latest  # imagem oficial com pgvector
+    container_name: pgvector_achei
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: achei
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
